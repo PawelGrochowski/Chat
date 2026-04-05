@@ -983,22 +983,21 @@ function handleTts($db) {
     ];
     $voice = $voiceMap[$personality] ?? 'alloy';
 
-    // Jailbreak prompt dla lektora - wstrzykiwany tylko do API TTS, niewidoczny w HTML chatu
     $ttsPrompts = [
-        'american_hood' => "(Deep, heavy, low-pitched African American male hood gangster voice. Aggressive and street-smart.) ",
-        'british_gangster' => "(Thick, raspy, extremely aggressive British gangster accent. Very menacing.) ",
-        'jaskier' => "(Expressive, theatrical, joyful medieval bard voice. Sing-songy and charismatic.) ",
-        'default' => ""
+        'american_hood' => "Speak in a deep, heavy, low-pitched African American male hood gangster voice. Address the listener aggressively, be street-smart and sound highly intimidating.",
+        'british_gangster' => "Speak with a thick, raspy, extremely aggressive British gangster accent. Sound very menacing and dangerous.",
+        'jaskier' => "Speak in an expressive, theatrical, joyful medieval bard voice. Be very sing-songy, charismatic, and enthusiastic.",
+        'default' => "Speak naturally and pleasantly."
     ];
     
-    $prefix = $ttsPrompts[$personality] ?? "";
-    $inputText = $prefix . $text;
+    $instructions = $ttsPrompts[$personality] ?? "Speak naturally and pleasantly.";
 
     $ch = curl_init('https://api.openai.com/v1/audio/speech');
     $payload = json_encode([
         'model' => 'gpt-4o-mini-tts',
-        'input' => $inputText,
-        'voice' => $voice
+        'input' => $text,
+        'voice' => $voice,
+        'instructions' => $instructions
     ]);
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
