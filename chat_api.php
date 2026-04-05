@@ -411,7 +411,7 @@ function getOpenAIResponse($prompt, $chat_id = null, $db = null) {
                 ['chat_id' => $chat_id],
                 'AND',
                 'id DESC',
-                12
+                4
             );
             $history = array_reverse($history); 
         }
