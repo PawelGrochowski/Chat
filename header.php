@@ -147,7 +147,7 @@ if (isset($_SESSION['user_id'])) {
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg">
+  <nav class="navbar navbar-expand-lg" data-bs-theme="dark">
     <div class="container-fluid px-4">
       <a class="navbar-brand" href="index.php"><i class="bi bi-house-door-fill me-2"></i>Clanker CHAT</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"

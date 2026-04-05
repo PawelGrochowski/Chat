@@ -38,9 +38,22 @@ if (isset($_GET['chat_id']) && is_numeric($_GET['chat_id'])) {
     <div class="chat-box" id="chat-box">
     </div>
     <div class="chat-footer">
-        <form id="message-form">
-            <input type="text" id="message-input" placeholder="Wpisz wiadomość...">
-            <button type="submit">Wyślij</button>
+        <form id="message-form" style="position: relative; display: flex; width: 100%;">
+            <input type="text" id="message-input" placeholder="Wpisz wiadomość..." style="padding-right: 80px; width: 100%;">
+            
+            <div class="personality-selector" style="position: absolute; right: 110px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; opacity: 0.8; transition: opacity 0.2s;">
+                <div class="custom-dropdown" id="quickPersonalityDropdown">
+                    <button type="button" class="custom-dropdown-toggle" id="quickPersonalityToggle" title="Zmień osobowość w locie">DEF</button>
+                    <ul class="custom-dropdown-menu" id="quickPersonalityMenu">
+                        <li data-value="default" title="Domyślny bot"><span class="custom-badge">DEF</span> Domyślny bot</li>
+                        <li data-value="british_gangster" title="Brytyjski gangus"><span class="custom-badge">GB</span> Brytyjski gangus</li>
+                        <li data-value="american_hood" title="Czarnoskóry raper"><span class="custom-badge">US</span> Czarnoskóry raper</li>
+                        <li data-value="jaskier" title="Jaskier"><span class="custom-badge">JAS</span> Jaskier</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button type="submit" style="margin-left: 10px;">Wyślij</button>
         </form>
     </div>
 </div>
@@ -57,10 +70,85 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('textModelSelect').value = savedTextModel;
     document.getElementById('imageModelSelect').value = savedImageModel;
     document.getElementById('personalitySelect').value = savedPersonality;
+    
+    // Ustawienie wartości w customowym selektorze na dole
+    const customDropdown = document.getElementById('quickPersonalityDropdown');
+    
+    if (customDropdown) {
+        const toggleBtn = document.getElementById('quickPersonalityToggle');
+        const menu = document.getElementById('quickPersonalityMenu');
+        const items = menu.querySelectorAll('li');
+        
+        const badgesMap = {
+            'default': 'DEF',
+            'british_gangster': 'GB',
+            'american_hood': 'US',
+            'jaskier': 'JAS'
+        };
+
+        toggleBtn.textContent = badgesMap[savedPersonality] || 'DEF';
+        
+        items.forEach(item => {
+            if(item.dataset.value === savedPersonality) item.classList.add('active');
+        });
+
+        toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            menu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!customDropdown.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        items.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const val = this.dataset.value;
+                document.getElementById('personalitySelect').value = val;
+                toggleBtn.textContent = badgesMap[val];
+                
+                items.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                menu.classList.remove('show');
+
+                const textModel = document.getElementById('textModelSelect').value;
+                const imageModel = document.getElementById('imageModelSelect').value;
+                sessionStorage.setItem('selectedPersonality', val);
+
+                fetch('chat_api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=set_models&text_model=' + encodeURIComponent(textModel) +
+                          '&image_model=' + encodeURIComponent(imageModel) +
+                          '&bot_personality=' + encodeURIComponent(val)
+                }).catch(e => console.error('Silent save error:', e));
+            });
+        });
+    }
+
     document.getElementById('saveModelsBtn').addEventListener('click', function() {
         const textModel = document.getElementById('textModelSelect').value;
         const imageModel = document.getElementById('imageModelSelect').value;
         const personality = document.getElementById('personalitySelect').value;
+        
+        if (customDropdown) {
+            const toggleBtn = document.getElementById('quickPersonalityToggle');
+            const items = document.getElementById('quickPersonalityMenu').querySelectorAll('li');
+            const badgesMap = {'default': 'DEF', 'british_gangster': 'GB', 'american_hood': 'US', 'jaskier': 'JAS'};
+            toggleBtn.textContent = badgesMap[personality] || 'DEF';
+            items.forEach(i => {
+                i.classList.remove('active');
+                if (i.dataset.value === personality) i.classList.add('active');
+            });
+        }
+        
         sessionStorage.setItem('selectedTextModel', textModel);
         sessionStorage.setItem('selectedImageModel', imageModel);
         sessionStorage.setItem('selectedPersonality', personality);

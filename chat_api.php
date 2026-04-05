@@ -126,14 +126,30 @@ function sendMessage($db) {
     }
 
     
+    // Add column if it doesn't exist
+    $db->query("ALTER TABLE messages ADD COLUMN IF NOT EXISTS personality VARCHAR(50) DEFAULT 'default'");
+
     $db->insertRows('messages', [
         'chat_id' => $chat_id,
         'sender' => 'user',
         'content' => $message,
-        'type' => 'text'
+        'type' => 'text',
+        'personality' => $_SESSION['bot_personality'] ?? 'default'
     ]);
     
     $intent = getIntent($message);
+    
+    // Generowanie taga osobowości dla świeżo zwracanej wiadomości
+    $personality = htmlspecialchars($_SESSION['bot_personality'] ?? 'default');
+    $persData = [
+        'default' => ['icon' => 'DEF', 'name' => 'Domyślny bot'],
+        'british_gangster' => ['icon' => 'GB', 'name' => 'Brytyjski gangus'],
+        'american_hood' => ['icon' => 'US', 'name' => 'Czarnoskóry raper'],
+        'jaskier' => ['icon' => 'JAS', 'name' => 'Jaskier']
+    ];
+    $pInfo = $persData[$personality] ?? $persData['default'];
+    $persTag = '<div class="message-personality" title="Osobowość: ' . $pInfo['name'] . '">' . $pInfo['icon'] . '</div>';
+
     if ($intent === 'image') {
 
         $image_data = generateImage($message);
@@ -141,11 +157,11 @@ function sendMessage($db) {
             $image_url = $image_data['url'];
             $message_content = $image_url;  
             $message_type = 'image';
-            $html_response = '<div class="message assistant-message"><img src="' . htmlspecialchars($image_url) . '" class="chat-image" style="cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;"></div>';
+            $html_response = '<div class="message assistant-message">' . $persTag . '<img src="' . htmlspecialchars($image_url) . '" class="chat-image" style="cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;"></div>';
         } else {
             $message_content = $image_data['error'] ?? 'Błąd generowania obrazu';
             $message_type = 'text';
-            $html_response = '<div class="message assistant-message"><p>' . htmlspecialchars($message_content) . '</p></div>';
+            $html_response = '<div class="message assistant-message">' . $persTag . '<p>' . htmlspecialchars($message_content) . '</p></div>';
         }
     } else {
         
@@ -154,7 +170,7 @@ function sendMessage($db) {
         $message_type = 'text';
         
         $html_content = markdownToHtml($assistant_message);
-        $html_response = '<div class="message assistant-message">' .
+        $html_response = '<div class="message assistant-message">' . $persTag .
             $html_content .
             '</div>';
     }
@@ -164,7 +180,8 @@ function sendMessage($db) {
         'chat_id' => $chat_id,
         'sender' => 'assistant',
         'content' => $message_content,
-        'type' => $message_type
+        'type' => $message_type,
+        'personality' => $_SESSION['bot_personality'] ?? 'default'
     ]);
     
     if ($message_type === 'image') {
@@ -294,9 +311,11 @@ function getMessages($db) {
     }
     
 
+    $db->query("ALTER TABLE messages ADD COLUMN IF NOT EXISTS personality VARCHAR(50) DEFAULT 'default'");
+
     $messages_data = $db->getRows(
         'messages',
-        ['sender', 'content', 'type'],
+        ['sender', 'content', 'type', 'personality'],
         ['chat_id' => $chat_id],
         'AND',
         'created_at ASC'
@@ -309,6 +328,22 @@ function getMessages($db) {
         $class = ($row['sender'] === 'user')
             ? 'user-message'
             : 'assistant-message';
+        
+        $personality = htmlspecialchars($row['personality'] ?? 'default');
+        
+        // Emotka i nazwa na hover
+        $persData = [
+            'default' => ['icon' => 'DEF', 'name' => 'Domyślny bot'],
+            'british_gangster' => ['icon' => 'GB', 'name' => 'Brytyjski gangus'],
+            'american_hood' => ['icon' => 'US', 'name' => 'Czarnoskóry raper'],
+            'jaskier' => ['icon' => 'JAS', 'name' => 'Jaskier']
+        ];
+        
+        $pInfo = $persData[$personality] ?? $persData['default'];
+        $pIcon = $pInfo['icon'];
+        $pName = $pInfo['name'];
+        
+        $persTag = '<div class="message-personality" title="Osobowość: ' . $pName . '">' . $pIcon . '</div>';
 
         if ($row['type'] === 'image') {
             
@@ -319,17 +354,17 @@ function getMessages($db) {
                 continue;  
             }
             
-            $html .= '<div class="message ' . $class . '"><img src="' . htmlspecialchars($image_url) . '" class="chat-image" style="cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;"></div>';
+            $html .= '<div class="message ' . $class . '">' . $persTag . '<img src="' . htmlspecialchars($image_url) . '" class="chat-image" style="cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;"></div>';
         } else {
             
             if ($class === 'assistant-message') {
                 
-                $html .= '<div class="message ' . $class . '">' .
+                $html .= '<div class="message ' . $class . '">' . $persTag .
                     markdownToHtml($row['content']) .
                     '</div>';
             } else {
                 
-                $html .= '<div class="message ' . $class . '"><p>' .
+                $html .= '<div class="message ' . $class . '">' . $persTag . '<p>' .
                     htmlspecialchars($row['content']) .
                     '</p></div>';
             }
@@ -885,22 +920,22 @@ function markdownToHtml($markdown) {
 
 
 function setSelectedModels() {
-    if (!isset($_SESSION['user_id'])) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Tylko zalogowani użytkownicy mogą zmieniać modele.']);
-        exit;
-    }
-
     $textModel = $_POST['text_model'] ?? AI_TEXT_MODEL;
     $imageModel = $_POST['image_model'] ?? AI_IMAGE_MODEL;
     $botPersonality = $_POST['bot_personality'] ?? 'default';
-    
-    
+
+    // Ograniczenia dostępu
+    if (!isset($_SESSION['user_id'])) {
+        // Z gośćmi pozwalamy na zmianę tylko osobowości (bot_personality), modele AI trzymamy domyślne by nie nadużywali kosztów
+        $textModel = AI_TEXT_MODEL;
+        $imageModel = AI_IMAGE_MODEL;
+    }
+
     $availableTextModels = ['gpt-5.4-2026-03-05', 'gpt-3.5-turbo'];
     $availableImageModels = ['gpt-5.4-2026-03-05', 'dall-e-3'];
     $availablePersonalities = ['default', 'british_gangster', 'american_hood', 'jaskier'];
-    
-    
+
+    // Walidacje
     if (!in_array($textModel, $availableTextModels)) {
         $textModel = AI_TEXT_MODEL;
     }
@@ -910,12 +945,11 @@ function setSelectedModels() {
     if (!in_array($botPersonality, $availablePersonalities)) {
         $botPersonality = 'default';
     }
-    
-    
+
     $_SESSION['selected_text_model'] = $textModel;
     $_SESSION['selected_image_model'] = $imageModel;
     $_SESSION['bot_personality'] = $botPersonality;
-    
+
     echo json_encode([
         'success' => true,
         'text_model' => $textModel,
