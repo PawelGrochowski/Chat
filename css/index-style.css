@@ -1,0 +1,106 @@
+.custom-container {
+        background-color: #1e293b;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+#searchBar {
+        background-color: #334155;
+        border: 1px solid #475569;
+        color: #f1f5f9;
+        border-radius: 12px;
+        padding: 10px 15px;
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 25px;
+    }
+
+#searchBar::placeholder {
+        color: #94a3b8;
+    }
+
+.table {
+        color: #f1f5f9;
+        background-color: transparent;
+    }
+
+.table thead {
+        background-color: #334155;
+    }
+
+.table th, .table td {
+        vertical-align: middle !important;
+        border-color: #475569;
+    }
+
+.table tbody tr {
+        background-color: #1e293b;
+    }
+
+.table tbody tr:nth-child(even) {
+        background-color: #273449;
+    }
+
+.btn {
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 500;
+        border: none;
+        transition: 0.2s ease-in-out;
+    }
+
+.btn-info {
+        background-color:rgb(41, 104, 206);
+        color: white;
+}
+
+.btn-info:hover {
+    background-color:rgb(63, 134, 248) !important;
+    color: #1e293b !important;
+}
+
+.btn-warning {
+        background-color:rgb(206, 136, 17);
+        color: white; 
+    }
+
+.btn-danger {
+        background-color:rgb(241, 75, 75);
+        color: white;
+    }
+
+.btn-danger:hover {
+    background-color:rgb(255, 0, 0) !important;
+    color: #1e293b !important;
+}
+
+.btn-opinie {
+    background-color:rgb(100, 145, 27);
+    color:rgb(235, 239, 245);
+    transition: 0.2s ease-in-out;
+}
+
+.btn-opinie:hover {
+    background-color: #bef264 !important;
+    color: #1e293b !important;
+}
+
+#restaurantTable {
+    --bs-table-bg: transparent !important;
+    --bs-table-color: #f1f5f9 !important;
+    background-color: transparent !important;
+    color: #f1f5f9 !important;
+}
+
+#restaurantTable.table-striped > tbody > tr:nth-of-type(odd) > * {
+    color: #f1f5f9 !important;
+}
+body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url('https:i0.wp.com/2gdesignandbuild.com/wp-content/uploads/2020/11/Web_Carters_of_Moseley_photo_by_Tom_Bird-5.jpg?fit=2000%2C1333&ssl=1') center/cover no-repeat;
+      filter: blur(5px) brightness(0.6) hue-rotate(200deg);
+      z-index: -1;
+    }
