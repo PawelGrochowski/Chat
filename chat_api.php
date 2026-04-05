@@ -51,6 +51,27 @@ switch ($action) {
 
 
 function sendMessage($db) {
+    if (!file_exists('settings.json')) {
+        file_put_contents('settings.json', json_encode(['guest_access' => 1]));
+    }
+    
+    $settings = json_decode(file_get_contents('settings.json'), true);
+    
+    $user_id = $_SESSION['user_id'] ?? null;
+    
+    if ($user_id) {
+        $user_data = $db->getRow('users', ['is_allowed'], ['id' => $user_id]);
+        if (!$user_data || $user_data['is_allowed'] == 0) {
+            echo json_encode(['error' => '<b>Blokada bezpieczeństwa:</b> Twoje konto nie zostało zautoryzowane przez administratora.<br>Poproś o uprawnienia dostępowe by generować wiadomości i obrazy.']);
+            exit;
+        }
+    } else {
+        if ($settings['guest_access'] == 0) {
+            echo json_encode(['error' => '<b>Blokada bezpieczeństwa:</b> Dostęp testowy "Gościa" został wyłączony przez system u wszystkich na widowni. Zaloguj się by uzyskać dostęp.']);
+            exit;
+        }
+    }
+
     $message = trim($_POST['message'] ?? '');
 
     if ($message === '') {
