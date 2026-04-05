@@ -88,7 +88,7 @@ function sendMessage($db) {
         $db->insertRows('chats', [
             'user_id' => $user_id,
             'is_guest' => $user_id ? 0 : 1,
-            'title' => substr($message, 0, 40) . '...'
+            'title' => mb_strlen($message, 'UTF-8') > 40 ? mb_substr($message, 0, 40, 'UTF-8') . '...' : $message
         ]);
 
         $chat_id = $db->getLastInsertId();
@@ -104,7 +104,7 @@ function sendMessage($db) {
             $db->insertRows('chats', [
                 'user_id' => $user_id,
                 'is_guest' => $user_id ? 0 : 1,
-                'title' => substr($message, 0, 40) . '...'
+                'title' => mb_strlen($message, 'UTF-8') > 40 ? mb_substr($message, 0, 40, 'UTF-8') . '...' : $message
             ]);
 
             $chat_id = $db->getLastInsertId();
@@ -120,7 +120,7 @@ function sendMessage($db) {
         }
         $_SESSION['guest_chats'][] = [
             'id' => $chat_id,
-            'title' => substr($message, 0, 40) . '...'
+            'title' => mb_strlen($message, 'UTF-8') > 40 ? mb_substr($message, 0, 40, 'UTF-8') . '...' : $message
         ];
     }
 
@@ -132,9 +132,9 @@ function sendMessage($db) {
         'type' => 'text'
     ]);
     
-    $is_image_request = isImageGenerationRequest($message);
-    if ($is_image_request) {
-        
+    $intent = getIntent($message);
+    if ($intent === 'image') {
+
         $image_data = generateImage($message);
         if (isset($image_data['success']) && $image_data['success']) {
             $image_url = $image_data['url'];
@@ -450,30 +450,61 @@ function getOpenAIResponse($prompt, $chat_id = null, $db = null) {
 }
 
 
-function isImageGenerationRequest($message) {
-    $triggers = [
-        'wygeneruj mi',
-        'stwórz obrazek',
-        'stwórz mi',
-        'wygeneruj obrazek',
-        'narysuj',
-        'narysuj mi',
-        'generate image',
-        'create image',
-        'draw'
+function classifyUserIntent($message) {
+    $apiKey = OPENAI_API_KEY;
+    
+    $data = [
+        'model' => 'gpt-4o-mini',
+        'messages' => [
+            [
+                'role' => 'system',
+                'content' => 'Return ONLY: image or chat. If the user asks to generate, create, draw, or visualize an image/picture, return "image". Otherwise, return "chat".'
+            ],
+            [
+                'role' => 'user',
+                'content' => $message
+            ]
+        ],
+        'temperature' => 0,
+        'max_tokens' => 10
     ];
 
-    $lowercase_message = strtolower($message);
+    $ch = curl_init('https://api.openai.com/v1/chat/completions');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $apiKey
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
 
-    foreach ($triggers as $trigger) {
-        if (strpos($lowercase_message, $trigger) === 0) {
-            return true;
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200 && $response) {
+        $result = json_decode($response, true);
+        if (isset($result['choices'][0]['message']['content'])) {
+            $intent = strtolower(trim($result['choices'][0]['message']['content']));
+            if (strpos($intent, 'image') !== false) {
+                return 'image';
+            }
         }
     }
 
-    return false;
+    return 'chat';
 }
 
+function getIntent($message) {
+    $fastPathRegex = '/^(wygeneruj|stw(ó|o)rz|narysuj|rysuj|generate image|create image|draw\b)/i';
+    
+    if (preg_match($fastPathRegex, trim($message))) {
+        return 'image';
+    }
+
+    return classifyUserIntent($message);
+}
 
 function generateImage($prompt) {
     $apiKey = OPENAI_API_KEY;
@@ -873,4 +904,6 @@ function setSelectedModels() {
         'bot_personality' => $botPersonality
     ]);
 }
+
+
 

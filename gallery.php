@@ -64,20 +64,20 @@ $(document).ready(function() {
         });
 
         if (filteredImages.length === 0) {
-            $('#galleryGrid').html('<div class="empty">📭 Brak obrazków</div>');
+            $('#galleryGrid').html('<div class="empty"> Brak obrazków</div>');
             return;
         }
 
         let html = '';
         filteredImages.forEach((img, index) => {
             const date = new Date(img.date).toLocaleDateString('pl-PL');
-            const ownerLabel = img.owner === 'guest' ? '👥 Publiczny' : '🔒 Prywatny';
+            const ownerLabel = img.owner === 'guest' ? 'Publiczny' : 'Prywatny';
             html += `
                 <div class="gallery-item" data-index="${index}">
                     <div class="gallery-image-wrapper">
                         <img src="${img.url}" alt="Obrazek" class="gallery-thumb">
                         <div class="gallery-overlay">
-                            <span class="view-icon">👁️ Powiększ</span>
+                            <span class="view-icon">Powiększ</span>
                         </div>
                     </div>
                     <div class="gallery-info">
