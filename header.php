@@ -1,8 +1,8 @@
 <?php
+require_once 'config.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once 'config.php';
 require_once 'lib/database.php';
 $db = new Database();
 $chats = [];
@@ -85,14 +85,20 @@ if (isset($_SESSION['user_id'])) {
       font-weight: 700;
       letter-spacing: 0.5px;
     }
+    @import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
+    
     .navbar-brand {
       transform: translateY(-1px);
-      font-family: 'Roboto Slab', serif !important;
+      font-family: 'Audiowide', cursive !important;
+      font-size: 1.4rem !important;
+      letter-spacing: 1px;
     }
+
     .navbar-brand, .nav-link, .dropdown-toggle {
       color: #f1f5f9 !important;
       font-weight: 500;
     }
+    
     .navbar-brand:hover, .nav-link:hover, .dropdown-item:hover {
       color: #3b82f6 !important;
     }
@@ -214,24 +220,24 @@ if (isset($_SESSION['user_id'])) {
           <div class="mb-3">
             <label for="textModelSelect" class="form-label">Model do tekstów</label>
             <select class="form-select" id="textModelSelect" style="background-color: #334155; color: #e2e8f0; border: 1px solid #475569;">
-              <option value="gpt-5.4-2026-03-05">GPT-5.4 (2026) - Frontier</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo - Szybki</option>
+              <option value="gpt-5.4-2026-03-05">GPT-5.4 (2026)</option>
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
             </select>
           </div>
           <div class="mb-3">
             <label for="imageModelSelect" class="form-label">Model do obrazów</label>
             <select class="form-select" id="imageModelSelect" style="background-color: #334155; color: #e2e8f0; border: 1px solid #475569;">
-              <option value="gpt-5.4-2026-03-05">GPT-5.4 (2026) - Best Quality</option>
-              <option value="dall-e-3">DALL-E 3 - Tried & Tested</option>
+              <option value="gpt-5.4-2026-03-05">GPT-5.4 (2026)</option>
+              <option value="dall-e-3">DALL-E 3</option>
             </select>
           </div>
           <div class="mb-3">
             <label for="personalitySelect" class="form-label">Osobowość Bota</label>
             <select class="form-select" id="personalitySelect" style="background-color: #334155; color: #e2e8f0; border: 1px solid #475569;">
               <option value="default">Domyślny asystent</option>
-              <option value="british_gangster">Brytyjski Gangster (Slang)</option>
-              <option value="american_hood">Amerykański Ziomek (Hood Slang)</option>
-              <option value="jaskier">Jaskier (Trubadur i Poeta)</option>
+              <option value="british_gangster">Brytyjczyk</option>
+              <option value="american_hood">Amerykanin</option>
+              <option value="jaskier">Jaskier</option>
             </select>
           </div>
           <small class="text-muted">Wybrane modele będą używane do wszystkich nowych wiadomości.</small>

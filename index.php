@@ -19,7 +19,16 @@ if (isset($_GET['chat_id']) && is_numeric($_GET['chat_id'])) {
       filter: blur(5px) brightness(0.6) hue-rotate(200deg);
       z-index: -1;
     }
+    .header-content h2 {
+        font-family: 'Orbitron', sans-serif !important;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #93c5fd;
+        text-shadow: 0 0 10px rgba(147, 197, 253, 0.5);
+    }
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 <div class="custom-container">
     <div class="chat-header">
         <div class="header-content">

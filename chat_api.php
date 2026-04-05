@@ -1,4 +1,5 @@
 <?php
+require_once 'config.php';
 session_start();
 
 ini_set('display_errors', 1);
@@ -7,7 +8,6 @@ error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 
-require_once 'config.php';
 require_once 'lib/database.php';
 
 $db = new Database();
@@ -30,6 +30,10 @@ switch ($action) {
 
     case 'set_models':
         setSelectedModels();
+        break;
+
+    case 'delete_chat':
+        deleteChat($db);
         break;
 
     case 'clear_guest_session':
@@ -149,17 +153,17 @@ function sendMessage($db) {
             
         } else {
             $chat_info = $db->getRow('chats', 'user_id', ['id' => $chat_id]);
-            $user_id = $chat_info['user_id'] ?? null;
-            
-            $db->insertRows('images', [
-                'message_id' => $message_id,
-                'file_path' => $message_content,
-                'file_name' => basename($message_content),
-                'mime_type' => 'image/png',
-                'file_size' => 0,  
-                'user_id' => $user_id,
-                'is_public' => $user_id ? 0 : 1  
-            ]);
+              $user_id = (!empty($chat_info['user_id']) && $chat_info['user_id'] !== '') ? (int)$chat_info['user_id'] : null;
+
+              $db->insertRows('images', [
+                  'message_id' => (int)$message_id,
+                  'file_path' => $message_content,
+                  'file_name' => basename($message_content),
+                  'mime_type' => 'image/png',
+                  'file_size' => 0,
+                  'user_id' => $user_id,
+                  'is_public' => $user_id ? 0 : 1
+              ]);
         }
     }
 
@@ -174,6 +178,41 @@ function sendMessage($db) {
     exit;
 }
 
+
+function deleteChat($db) {
+    $chat_id = $_POST['chat_id'] ?? null;
+    $user_id = $_SESSION['user_id'] ?? null;
+
+    if (!is_numeric($chat_id) || intval($chat_id) <= 0) {
+        echo json_encode(['error' => 'Invalid chat_id']);
+        exit;
+    }
+    
+    $chat_id = intval($chat_id);
+
+    if ($user_id) {
+        $chat_info = $db->getRow('chats', 'user_id', ['id' => $chat_id]);
+        if ($chat_info && $chat_info['user_id'] == $user_id) {
+            $db->updateRows('chats', ['user_id' => null], ['id' => $chat_id]);
+            echo json_encode(['success' => true]);
+            exit;
+        }
+    } else {
+        if (isset($_SESSION['guest_chats'])) {
+            foreach ($_SESSION['guest_chats'] as $key => $chat) {
+                if ($chat['id'] == $chat_id) {
+                    unset($_SESSION['guest_chats'][$key]);
+                    $_SESSION['guest_chats'] = array_values($_SESSION['guest_chats']);
+                    echo json_encode(['success' => true]);
+                    exit;
+                }
+            }
+        }
+    }
+    
+    echo json_encode(['error' => 'Chat not found or unauthorized']);
+    exit;
+}
 
 function getMessages($db) {
 
@@ -813,3 +852,4 @@ function setSelectedModels() {
         'bot_personality' => $botPersonality
     ]);
 }
+
