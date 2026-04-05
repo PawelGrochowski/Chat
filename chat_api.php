@@ -964,19 +964,14 @@ function handleTts($db) {
         exit;
     }
 
-    $query = "SELECT content, personality FROM messages WHERE id = ?";
-    $stmt = $db->getConnection()->prepare($query);
-    $stmt->bind_param("i", $messageId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $row = $db->getRow('messages', ['content', 'personality'], ['id' => $messageId]);
 
-    if ($result->num_rows === 0) {
+    if (empty($row)) {
         http_response_code(404);
         echo json_encode(['error' => 'Message not found']);
         exit;
     }
 
-    $row = $result->fetch_assoc();
     $text = strip_tags(markdownToHtml($row['content']));
 
     $personality = $row['personality'] ?? 'default';
