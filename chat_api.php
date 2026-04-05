@@ -394,31 +394,23 @@ function getOpenAIResponse($prompt, $chat_id = null, $db = null) {
             'messages' => $api_messages
         ];
 
-        $options = [
-            'http' => [
-                'header' =>
-                    "Content-type: application/json\r\n" .
-                    "Authorization: Bearer $apiKey\r\n",
-                'method' => 'POST',
-                'content' => json_encode($data),
-                'timeout' => 120, 
-                'ignore_errors' => true
-            ],
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-            ]
-        ];
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiKey
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_TIMEOUT, 120);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-        $context = stream_context_create($options);
-        $result = @file_get_contents($url, false, $context);
+        $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-        if ($result !== false) {
-            $response = json_decode($result, true);
-            
-            if ($response !== null) {
-                
-                if (isset($response['error'])) {
+        if ($result !== false && $httpCode >= 200 && $httpCode < 300) {
                     $error_type = $response['error']['type'] ?? 'unknown';
                     
                     
