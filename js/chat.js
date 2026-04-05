@@ -153,13 +153,23 @@ $(document).ready(function () {
                     $imageLoader.remove();
                 }
 
+                if (response.error) {
+                    $('#chat-box').append(
+                        '<div class="message assistant-message" style="border: 1px solid #ef4444; background-color: rgba(239, 68, 68, 0.1);"><p style="color: #fca5a5;">' +
+                        response.error +
+                        '</p></div>'
+                    );
+                    scrollToBottom();
+                    return;
+                }
+
                 if (response.chat_id) {
                     chatId = Number(response.chat_id);
                 }
 
                 if (response.message) {
                     $('#chat-box').append(response.message);
-                    attachImageClickHandlers(); 
+                    attachImageClickHandlers();
                 }
 
                 scrollToBottom();
