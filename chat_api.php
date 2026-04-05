@@ -964,6 +964,21 @@ function handleTts($db) {
         exit;
     }
 
+    $cacheDir = 'tts_cache';
+    if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0777, true);
+    }
+    
+    $cacheFile = $cacheDir . '/msg_' . (int)$messageId . '.mp3';
+    
+    if (file_exists($cacheFile)) {
+        ob_clean();
+        header('Content-Type: audio/mpeg');
+        header('Cache-Control: max-age=31536000');
+        readfile($cacheFile);
+        exit;
+    }
+
     $row = $db->getRow('messages', ['content', 'personality'], ['id' => $messageId]);
 
     if (empty($row)) {
@@ -977,15 +992,15 @@ function handleTts($db) {
     $personality = $row['personality'] ?? 'default';
     $voiceMap = [
         'default' => 'alloy',
-        'british_gangster' => 'onyx',
-        'american_hood' => 'echo',
+        'british_gangster' => 'echo',
+        'american_hood' => 'onyx',
         'jaskier' => 'fable'
     ];
     $voice = $voiceMap[$personality] ?? 'alloy';
 
     $ttsPrompts = [
         'american_hood' => "Speak in a deep, heavy, low-pitched African American male hood gangster voice. Address the listener aggressively, be street-smart and sound highly intimidating.",
-        'british_gangster' => "Speak with a thick, raspy, extremely aggressive British gangster accent. Sound very menacing and dangerous.",
+        'british_gangster' => "Speak with a high, squeaky, extremely aggressive and fast British gangster accent. Sound very menacing and dangerous.",
         'jaskier' => "Speak in an expressive, theatrical, joyful medieval bard voice. Be very sing-songy, charismatic, and enthusiastic.",
         'default' => "Speak naturally and pleasantly."
     ];
@@ -1013,6 +1028,7 @@ function handleTts($db) {
     curl_close($ch);
 
     if ($httpCode === 200) {
+        file_put_contents($cacheFile, $response);
         ob_clean();
         header('Content-Type: audio/mpeg');
         echo $response;
