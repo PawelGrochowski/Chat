@@ -126,9 +126,6 @@ function sendMessage($db) {
     }
 
     
-    // Add column if it doesn't exist
-    $db->query("ALTER TABLE messages ADD COLUMN IF NOT EXISTS personality VARCHAR(50) DEFAULT 'default'");
-
     $db->insertRows('messages', [
         'chat_id' => $chat_id,
         'sender' => 'user',
@@ -139,7 +136,6 @@ function sendMessage($db) {
     
     $intent = getIntent($message);
     
-    // Generowanie taga osobowości dla świeżo zwracanej wiadomości
     $personality = htmlspecialchars($_SESSION['bot_personality'] ?? 'default');
     $persData = [
         'default' => ['icon' => 'DEF', 'name' => 'Domyślny bot'],
@@ -310,8 +306,6 @@ function getMessages($db) {
         }
     }
     
-
-    $db->query("ALTER TABLE messages ADD COLUMN IF NOT EXISTS personality VARCHAR(50) DEFAULT 'default'");
 
     $messages_data = $db->getRows(
         'messages',
