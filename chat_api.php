@@ -410,24 +410,25 @@ function getOpenAIResponse($prompt, $chat_id = null, $db = null) {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($result !== false && $httpCode >= 200 && $httpCode < 300) {
+        if ($result !== false) {
+            $response = json_decode($result, true);
+            if ($response !== null) {
+                if (isset($response['error'])) {
                     $error_type = $response['error']['type'] ?? 'unknown';
-                    
-                    
+
                     if (strpos($error_type, 'rate_limit') !== false && $attempt < $maxRetries) {
                         sleep($retryDelay * $attempt);
                         continue;
                     }
-                    
+
                     $error_msg = $response['error']['message'] ?? 'Nieznany błąd';
                     return "Błąd API ($error_type): $error_msg";
                 }
 
-                
-                if (isset($response['choices'][0]['message']['content'])) {
+if (isset($response['choices'][0]['message']['content'])) {
                     return $response['choices'][0]['message']['content'];
                 }
-                
+
                 return 'Brak odpowiedzi z API';
             }
         }
