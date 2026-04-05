@@ -2,11 +2,11 @@
 require_once 'config.php';
 session_start();
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 require_once 'lib/database.php';
 
@@ -196,7 +196,14 @@ function sendMessage($db) {
         'message' => $html_response
     ];
     
-    $json = json_encode($response_data);
+    $response_data = [
+        'chat_id' => $chat_id,
+        'is_new_chat' => $is_new_chat,
+        'message' => $html_response
+    ];
+    
+    $json = json_encode($response_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    ob_clean();
     if ($json === false) {
         $error_msg = json_last_error_msg();
         error_log("JSON encode error: " . $error_msg);
@@ -204,15 +211,16 @@ function sendMessage($db) {
             'chat_id' => $chat_id,
             'is_new_chat' => $is_new_chat,
             'message' => '<div class="message assistant-message"><p>Wystąpił błąd przy generowaniu odpowiedzi: ' . $error_msg . '</p></div>'
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo $json;
     }
 
     exit;
     } catch (\Throwable $e) {
+        ob_clean();
         http_response_code(500);
-        echo json_encode(['error' => 'Błąd PHP: ' . $e->getMessage() . ' na linii ' . $e->getLine() . ' w ' . basename($e->getFile())]);
+        echo json_encode(['error' => 'Błąd PHP: ' . $e->getMessage() . ' na linii ' . $e->getLine() . ' w ' . basename($e->getFile())], JSON_UNESCAPED_UNICODE);
         exit;
     }
 }

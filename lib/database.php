@@ -10,7 +10,7 @@ class Database {
             die('Błąd połączenia: ' . mysqli_connect_error());
         }
 
-        mysqli_set_charset($this->connection, 'utf8');
+        mysqli_set_charset($this->connection, 'utf8mb4');
     }
 
     
