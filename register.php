@@ -314,4 +314,3 @@ document.getElementById('togglePassword')?.addEventListener('click', function() 
 });
 </script>
 
-<?php include('footer.php'); ?>

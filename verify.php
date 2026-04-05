@@ -53,4 +53,3 @@ if (isset($_GET['token'])) {
     </div>
 </div>
 
-<?php include('footer.php'); ?>
