@@ -234,4 +234,57 @@ $(document).ready(function () {
         return false;
     }
 
+    let currentAudio = null;
+    let currentTtsBtn = null;
+
+    document.addEventListener('click', async function(e) {
+        const btn = e.target.closest('.tts-btn');
+        if (!btn) return;
+        
+        e.preventDefault();
+        
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+            
+            const prevBtn = currentTtsBtn;
+            if (prevBtn) {
+                prevBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+                currentTtsBtn = null;
+            }
+            if (btn === prevBtn) return;
+        }
+
+        const messageId = btn.getAttribute('data-message-id');
+        if (!messageId) return;
+
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        currentTtsBtn = btn;
+
+        try {
+            const url = `chat_api.php?action=tts&message_id=${messageId}`;
+            currentAudio = new Audio(url);
+            
+            await new Promise((resolve, reject) => {
+                currentAudio.oncanplaythrough = resolve;
+                currentAudio.onerror = reject;
+                currentAudio.load();
+            });
+
+            btn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+            currentAudio.play();
+
+            currentAudio.onended = () => {
+                btn.innerHTML = '<i class="bi bi-play-fill"></i>';
+                currentAudio = null;
+                currentTtsBtn = null;
+            };
+
+        } catch (error) {
+            console.error('Error playing TTS:', error);
+            btn.innerHTML = '<i class="bi bi-play-fill" style="color:var(--bs-form-invalid-color) !important"></i>';
+            setTimeout(() => btn.innerHTML = '<i class="bi bi-play-fill"></i>', 2000);
+        }
+    });
+
 })

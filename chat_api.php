@@ -43,6 +43,10 @@ switch ($action) {
         echo json_encode(['success' => true]);
         exit;
 
+    case 'tts':
+        handleTts($db);
+        break;
+
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Invalid action']);
@@ -183,9 +187,8 @@ function sendMessage($db) {
     if ($message_type === 'image') {
         $message_id = $db->getLastInsertId();
         
-        
         if (!preg_match('/^images\/[a-zA-Z0-9._-]+\.(png|jpg|jpeg|gif|webp)$/i', $message_content)) {
-            
+
         } else {
             $chat_info = $db->getRow('chats', 'user_id', ['id' => $chat_id]);
               $user_id = (!empty($chat_info['user_id']) && $chat_info['user_id'] !== '') ? (int)$chat_info['user_id'] : null;
@@ -200,17 +203,12 @@ function sendMessage($db) {
                   'is_public' => $user_id ? 0 : 1
               ]);
         }
+    } else {
+        $message_id = $db->getLastInsertId();
+        $ttsTag = '<button class="btn btn-sm btn-outline-secondary tts-btn" data-message-id="' . $message_id . '" title="Odtwórz wiadomość" style="position: absolute; bottom: -12px; right: 20px; font-size: 10px; padding: 2px 6px; border-radius: 12px; z-index: 10;"><i class="bi bi-play-fill"></i></button>';
+        $html_response = '<div class="message assistant-message" style="position: relative;">' . $persTag . $ttsTag . markdownToHtml($message_content) . '</div>';
     }
 
-    
-    $response_data = [
-        'chat_id' => $chat_id,
-        'is_new_chat' => $is_new_chat,
-        'message' => $html_response
-    ];
-    
-    $response_data = [
-        'chat_id' => $chat_id,
         'is_new_chat' => $is_new_chat,
         'message' => $html_response
     ];
@@ -309,7 +307,7 @@ function getMessages($db) {
 
     $messages_data = $db->getRows(
         'messages',
-        ['sender', 'content', 'type', 'personality'],
+        ['id', 'sender', 'content', 'type', 'personality'],
         ['chat_id' => $chat_id],
         'AND',
         'created_at ASC'
@@ -352,8 +350,9 @@ function getMessages($db) {
         } else {
             
             if ($class === 'assistant-message') {
+                $ttsTag = '<button class="btn btn-sm btn-outline-secondary tts-btn" data-message-id="' . $row['id'] . '" title="Odtwórz wiadomość" style="position: absolute; bottom: -12px; right: 20px; font-size: 10px; padding: 2px 6px; border-radius: 12px; z-index: 10;"><i class="bi bi-play-fill"></i></button>';
                 
-                $html .= '<div class="message ' . $class . '">' . $persTag .
+                $html .= '<div class="message ' . $class . '" style="position: relative;">' . $persTag . $ttsTag .
                     markdownToHtml($row['content']) .
                     '</div>';
             } else {
@@ -950,6 +949,75 @@ function setSelectedModels() {
         'image_model' => $imageModel,
         'bot_personality' => $botPersonality
     ]);
+}
+
+function handleTts($db) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        http_response_code(405);
+        echo json_encode(['error' => 'Method not allowed']);
+        exit;
+    }
+
+    $messageId = $_GET['message_id'] ?? null;
+    if (!$messageId) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Missing message_id']);
+        exit;
+    }
+
+    $query = "SELECT content, personality FROM messages WHERE id = ?";
+    $stmt = $db->getConnection()->prepare($query);
+    $stmt->bind_param("i", $messageId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Message not found']);
+        exit;
+    }
+
+    $row = $result->fetch_assoc();
+    $text = strip_tags(markdownToHtml($row['content']));
+
+    $personality = $row['personality'] ?? 'default';
+    $voiceMap = [
+        'default' => 'alloy',
+        'british_gangster' => 'onyx',
+        'american_hood' => 'echo',
+        'jaskier' => 'fable'
+    ];
+    $voice = $voiceMap[$personality] ?? 'alloy';
+
+    $ch = curl_init('https://api.openai.com/v1/audio/speech');
+    $payload = json_encode([
+        'model' => 'tts-1',
+        'input' => $text,
+        'voice' => $voice
+    ]);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . OPENAI_API_KEY
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200) {
+        ob_clean();
+        header('Content-Type: audio/mpeg');
+        echo $response;
+        exit;
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'TTS API failed', 'details' => $response]);
+        exit;
+    }
 }
 
 
