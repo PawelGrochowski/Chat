@@ -51,7 +51,8 @@ switch ($action) {
 
 
 function sendMessage($db) {
-    if (!file_exists('settings.json')) {
+    try {
+        if (!file_exists('settings.json')) {
         file_put_contents('settings.json', json_encode(['guest_access' => 1]));
     }
     
@@ -194,9 +195,26 @@ function sendMessage($db) {
         'is_new_chat' => $is_new_chat,
         'message' => $html_response
     ];
-    echo json_encode($response_data);
+    
+    $json = json_encode($response_data);
+    if ($json === false) {
+        $error_msg = json_last_error_msg();
+        error_log("JSON encode error: " . $error_msg);
+        echo json_encode([
+            'chat_id' => $chat_id,
+            'is_new_chat' => $is_new_chat,
+            'message' => '<div class="message assistant-message"><p>Wystąpił błąd przy generowaniu odpowiedzi: ' . $error_msg . '</p></div>'
+        ]);
+    } else {
+        echo $json;
+    }
 
     exit;
+    } catch (\Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Błąd PHP: ' . $e->getMessage() . ' na linii ' . $e->getLine() . ' w ' . basename($e->getFile())]);
+        exit;
+    }
 }
 
 

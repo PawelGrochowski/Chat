@@ -185,8 +185,15 @@ $(document).ready(function () {
                     $imageLoader.remove();
                 }
 
+                let errorMsg = 'Błąd serwera';
+                if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                } else if (xhr && xhr.responseText) {
+                    errorMsg = 'Błąd serwera (' + xhr.status + '): ' + xhr.statusText;
+                }
+                
                 $('#chat-box').append(
-                    '<div class="message assistant-message"><p>Błąd serwera</p></div>'
+                    '<div class="message assistant-message"><p>' + errorMsg + '</p></div>'
                 );
 
                 scrollToBottom();
