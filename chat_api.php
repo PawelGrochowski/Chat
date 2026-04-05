@@ -209,10 +209,12 @@ function sendMessage($db) {
         $html_response = '<div class="message assistant-message" style="position: relative;">' . $persTag . $ttsTag . markdownToHtml($message_content) . '</div>';
     }
 
+    $response_data = [
+        'chat_id' => $chat_id,
         'is_new_chat' => $is_new_chat,
         'message' => $html_response
     ];
-    
+
     $json = json_encode($response_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     ob_clean();
     if ($json === false) {
@@ -917,9 +919,7 @@ function setSelectedModels() {
     $imageModel = $_POST['image_model'] ?? AI_IMAGE_MODEL;
     $botPersonality = $_POST['bot_personality'] ?? 'default';
 
-    // Ograniczenia dostępu
     if (!isset($_SESSION['user_id'])) {
-        // Z gośćmi pozwalamy na zmianę tylko osobowości (bot_personality), modele AI trzymamy domyślne by nie nadużywali kosztów
         $textModel = AI_TEXT_MODEL;
         $imageModel = AI_IMAGE_MODEL;
     }
@@ -928,7 +928,6 @@ function setSelectedModels() {
     $availableImageModels = ['gpt-5.4-2026-03-05', 'dall-e-3'];
     $availablePersonalities = ['default', 'british_gangster', 'american_hood', 'jaskier'];
 
-    // Walidacje
     if (!in_array($textModel, $availableTextModels)) {
         $textModel = AI_TEXT_MODEL;
     }
