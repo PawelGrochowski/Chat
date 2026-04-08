@@ -287,4 +287,21 @@ $(document).ready(function () {
         }
     });
 
-})
+    function adjustChatHeight() {
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            const headerHeight = document.querySelector('.chat-header') ? document.querySelector('.chat-header').offsetHeight : 0;
+            const footerHeight = document.querySelector('.chat-footer') ? document.querySelector('.chat-footer').offsetHeight : 0;
+            const availableHeight = window.innerHeight - headerHeight - footerHeight;
+            
+            const messagesContainer = document.querySelector('#chat-messages');
+            if (messagesContainer) {
+                messagesContainer.style.height = `${availableHeight}px`;
+                messagesContainer.style.maxHeight = `${availableHeight}px`;
+            }
+        }
+    }
+
+    window.addEventListener('resize', adjustChatHeight);
+    document.addEventListener('DOMContentLoaded', adjustChatHeight);
+});
