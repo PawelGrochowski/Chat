@@ -87,6 +87,7 @@ html, body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    min-height: 0; /* Zapobiega problemom z elastycznością */
 }
 
 
