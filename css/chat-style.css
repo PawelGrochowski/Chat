@@ -2,12 +2,14 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow: hidden; /* Zapobiega przewijaniu całej strony */
 }
 
 .custom-container {
     display: flex;
     flex-direction: column;
+    height: 100dvh; /* Użyj dynamicznej wysokości viewportu */
+}
     height: calc(100vh - 80px);
     overflow-y: auto;
 }
