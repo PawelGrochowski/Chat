@@ -2,13 +2,12 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
+    overflow: hidden;
 }
 
 .custom-container {
     display: flex;
     flex-direction: column;
-    height: 100dvh; /* Użyj dynamicznej wysokości viewportu */
-}min-height: 100vh; /* Zapewnia, że kontener wypełnia co najmniej całą wysokość ekran
     height: calc(100vh - 80px);
     overflow-y: auto;
 }
@@ -86,7 +85,6 @@ html, body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Zapobiega problemom z elastycznością */
 }
 
 
@@ -141,12 +139,9 @@ html, body {
 
 .chat-footer {
     padding: 10px;
+    margin-bottom: 1%;
     border-top: 1px solid #ccc;
     flex-shrink: 0;
-    width: 100%;
-    background-color: #f1f1f1; /* Kolor tła, aby pasował do reszty */
-    position: sticky;
-    bottom: 0;
 }
 
 #message-form {
