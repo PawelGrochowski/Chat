@@ -46,8 +46,8 @@ if (isset($_GET['chat_id']) && is_numeric($_GET['chat_id'])) {
                     <button type="button" class="custom-dropdown-toggle" id="quickPersonalityToggle" title="Zmień osobowość w locie">DEF</button>
                     <ul class="custom-dropdown-menu" id="quickPersonalityMenu">
                         <li data-value="default" title="Domyślny bot"><span class="custom-badge">DEF</span> Domyślny bot</li>
-                        <li data-value="british_gangster" title="Brytyjski gangus"><span class="custom-badge">GB</span> Brytyjski gangus</li>
-                        <li data-value="american_hood" title="Czarnoskóry raper"><span class="custom-badge">US</span> Czarnoskóry raper</li>
+                        <li data-value="british_gangster" title="Brytyjski gangus"><span class="custom-badge">GB</span> Brytyjczyk</li>
+                        <li data-value="american_hood" title="Czarnoskóry raper"><span class="custom-badge">US</span> Amerykanin</li>
                         <li data-value="jaskier" title="Jaskier"><span class="custom-badge">JAS</span> Jaskier</li>
                     </ul>
                 </div>

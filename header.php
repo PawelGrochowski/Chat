@@ -21,7 +21,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Restauracje Projekt</title>
+  <title>AI Chatbot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -235,8 +235,8 @@ if (isset($_SESSION['user_id'])) {
             <label for="personalitySelect" class="form-label">Osobowość Bota</label>
             <select class="form-select" id="personalitySelect" style="background-color: #334155; color: #e2e8f0; border: 1px solid #475569;">
               <option value="default">Domyślny asystent</option>
-              <option value="british_gangster">Brytyjczyk</option>
-              <option value="american_hood">Amerykanin</option>
+              <option value="Brytyjczyk">Brytyjczyk</option>
+              <option value="Amerykanin">Amerykanin</option>
               <option value="jaskier">Jaskier</option>
             </select>
           </div>
