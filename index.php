@@ -71,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('imageModelSelect').value = savedImageModel;
     document.getElementById('personalitySelect').value = savedPersonality;
     
-    // Ustawienie wartości w customowym selektorze na dole
     const customDropdown = document.getElementById('quickPersonalityDropdown');
     
     if (customDropdown) {
@@ -165,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const modal = bootstrap.Modal.getInstance(document.getElementById('modelSelectorModal'));
             modal.hide();
-            alert('✅ Modele i osobowość zapisane!');
+            alert('Modele i osobowość zapisane!');
         })
         .catch(error => console.error('Error:', error));
     });
