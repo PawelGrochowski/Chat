@@ -46,8 +46,8 @@ if (isset($_GET['chat_id']) && is_numeric($_GET['chat_id'])) {
                     <button type="button" class="custom-dropdown-toggle" id="quickPersonalityToggle" title="Zmień osobowość w locie">DEF</button>
                     <ul class="custom-dropdown-menu" id="quickPersonalityMenu">
                         <li data-value="default" title="Domyślny bot"><span class="custom-badge">DEF</span> Domyślny bot</li>
-                        <li data-value="british_gangster" title="Brytyjski gangus"><span class="custom-badge">GB</span> Brytyjczyk</li>
-                        <li data-value="american_hood" title="Czarnoskóry raper"><span class="custom-badge">US</span> Amerykanin</li>
+                        <li data-value="Brytyjczyk" title="Brytyjski gangus"><span class="custom-badge">GB</span> Brytyjczyk</li>
+                        <li data-value="Amerykanin" title="Czarnoskóry raper"><span class="custom-badge">US</span> Amerykanin</li>
                         <li data-value="jaskier" title="Jaskier"><span class="custom-badge">JAS</span> Jaskier</li>
                     </ul>
                 </div>
@@ -80,8 +80,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const badgesMap = {
             'default': 'DEF',
-            'british_gangster': 'GB',
-            'american_hood': 'US',
+            'Brytyjczyk': 'GB',
+            'Amerykanin': 'US',
             'jaskier': 'JAS'
         };
 
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (customDropdown) {
             const toggleBtn = document.getElementById('quickPersonalityToggle');
             const items = document.getElementById('quickPersonalityMenu').querySelectorAll('li');
-            const badgesMap = {'default': 'DEF', 'british_gangster': 'GB', 'american_hood': 'US', 'jaskier': 'JAS'};
+            const badgesMap = {'default': 'DEF', 'Brytyjczyk': 'GB', 'Amerykanin': 'US', 'jaskier': 'JAS'};
             toggleBtn.textContent = badgesMap[personality] || 'DEF';
             items.forEach(i => {
                 i.classList.remove('active');
